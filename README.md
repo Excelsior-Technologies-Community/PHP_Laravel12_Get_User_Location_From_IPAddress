@@ -226,7 +226,3 @@ public function index(Request $request): View
 <img width="1729" height="710" alt="image" src="https://github.com/user-attachments/assets/f883065c-f552-4a14-a918-1ddd6e6c6e39" />
 
 ---
-
-## License
-
-This project is open-source and available S
