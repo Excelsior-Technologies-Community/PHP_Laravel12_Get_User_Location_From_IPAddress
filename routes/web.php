@@ -1,7 +1,20 @@
 <?php
-  
-use App\Http\Controllers\UserController;
+
 use Illuminate\Support\Facades\Route;
-  
-  
-Route::get('user', [UserController::class, 'index']);
+use App\Http\Controllers\UserController;
+
+Route::get('/', function () {
+    return redirect('/user');
+});
+
+// Search IP Address
+Route::get('/user', [UserController::class, 'index'])->name('user');
+
+// Dashboard
+Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
+
+// History
+Route::get('/history', [UserController::class, 'history'])->name('history');
+
+// Delete History
+Route::delete('/history/{id}', [UserController::class, 'destroy'])->name('history.delete');
