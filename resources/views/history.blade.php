@@ -46,11 +46,11 @@
 
         @if(session('success'))
 
-            <div class="alert alert-success">
+        <div class="alert alert-success">
 
-                {{ session('success') }}
+            {{ session('success') }}
 
-            </div>
+        </div>
 
         @endif
 
@@ -72,8 +72,34 @@
 
                         <form method="GET" action="{{ route('history') }}">
 
-                            <input type="text" name="search" value="{{ request('search') }}" class="form-control"
-                                placeholder="Search IP, Country, City...">
+                            <div class="input-group">
+
+                                <input
+                                    type="text"
+                                    name="search"
+                                    class="form-control"
+                                    placeholder="Search IP, Country, City..."
+                                    value="{{ request('search') }}">
+
+                                <button class="btn btn-primary">
+
+                                    Search
+
+                                </button>
+
+                                @if(request('search'))
+
+                                <a
+                                    href="{{ route('history') }}"
+                                    class="btn btn-secondary">
+
+                                    Clear
+
+                                </a>
+
+                                @endif
+
+                            </div>
 
                         </form>
 
@@ -84,6 +110,33 @@
             </div>
 
             <div class="card-body">
+
+                <div class="d-flex justify-content-between mb-3">
+
+                    <div>
+
+                        <a
+                            href="{{ route('history.export.csv',['search'=>request('search')]) }}"
+                            class="btn btn-success">
+
+                            📥 Export CSV
+
+                        </a>
+
+                    </div>
+
+                    <div>
+
+                        <span class="badge bg-primary fs-6">
+
+                            Total Records :
+                            {{ $histories->total() }}
+
+                        </span>
+
+                    </div>
+
+                </div>
 
                 <table class="table table-bordered table-hover align-middle">
 
@@ -113,75 +166,91 @@
 
                         @forelse($histories as $history)
 
-                            <tr>
+                        <tr>
 
-                                <td>
+                            <td>
 
-                                    {{ $histories->firstItem() + $loop->index }}
+                                {{ $histories->firstItem() + $loop->index }}
 
-                                </td>
+                            </td>
 
-                                <td>
+                            <td>
 
-                                    {{ $history->ip }}
+                                <div class="d-flex align-items-center">
 
-                                </td>
+                                    <span id="ip{{ $history->id }}">
 
-                                <td>
+                                        {{ $history->ip }}
 
-                                    {{ $history->country }}
+                                    </span>
 
-                                </td>
+                                    <button
+                                        class="btn btn-sm btn-outline-primary ms-2"
+                                        onclick="copyIp('ip{{ $history->id }}')">
 
-                                <td>
+                                        📋 Copy
 
-                                    {{ $history->city }}
+                                    </button>
 
-                                </td>
+                                </div>
 
-                                <td>
+                            </td>
 
-                                    {{ $history->region }}
+                            <td>
 
-                                </td>
+                                {{ $history->country }}
 
-                                <td>
+                            </td>
 
-                                    {{ $history->created_at->format('d M Y h:i A') }}
+                            <td>
 
-                                </td>
+                                {{ $history->city }}
 
-                                <td>
+                            </td>
 
-                                    <form action="{{ route('history.delete', $history->id) }}" method="POST"
-                                        onsubmit="return confirm('Are you sure you want to delete this record?')">
+                            <td>
 
-                                        @csrf
-                                        @method('DELETE')
+                                {{ $history->region }}
 
-                                        <button class="btn btn-danger btn-sm">
+                            </td>
 
-                                            Delete
+                            <td>
 
-                                        </button>
+                                {{ $history->created_at->format('d M Y h:i A') }}
 
-                                    </form>
+                            </td>
 
-                                </td>
+                            <td>
 
-                            </tr>
+                                <form action="{{ route('history.delete', $history->id) }}" method="POST"
+                                    onsubmit="return confirm('Are you sure you want to delete this record?')">
+
+                                    @csrf
+                                    @method('DELETE')
+
+                                    <button class="btn btn-danger btn-sm">
+
+                                        Delete
+
+                                    </button>
+
+                                </form>
+
+                            </td>
+
+                        </tr>
 
                         @empty
 
-                            <tr>
+                        <tr>
 
-                                <td colspan="7" class="text-center text-muted">
+                            <td colspan="7" class="text-center text-muted">
 
-                                    No history found.
+                                No history found.
 
-                                </td>
+                            </td>
 
-                            </tr>
+                        </tr>
 
                         @endforelse
 
@@ -190,7 +259,9 @@
                 </table>
 
                 <div class="d-flex justify-content-center mt-4">
+
                     {{ $histories->withQueryString()->links() }}
+
                 </div>
 
             </div>
@@ -198,19 +269,80 @@
         </div>
 
         <div class="text-center mt-5">
+
             <hr>
+
             <p class="text-muted mb-0">
+
                 Laravel 12 IP Location Tracker
+
             </p>
 
             <small class="text-secondary">
+
                 Search History • Pagination • Delete Record
+
             </small>
+
+        </div>
+
+    </div>
+
+    <!-- Copy Success Toast -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+
+        <div
+            id="copyToast"
+            class="toast text-bg-success border-0"
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true">
+
+            <div class="d-flex">
+
+                <div class="toast-body">
+
+                    ✅ IP Address copied successfully.
+
+                </div>
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white me-2 m-auto"
+                    data-bs-dismiss="toast">
+                </button>
+
+            </div>
+
         </div>
 
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function copyIp(id) {
+            const text = document.getElementById(id).innerText;
+
+            navigator.clipboard.writeText(text)
+                .then(() => {
+
+                    const toast = new bootstrap.Toast(
+                        document.getElementById('copyToast'), {
+                            delay: 2000
+                        }
+                    );
+
+                    toast.show();
+
+                })
+                .catch(() => {
+
+                    alert('Unable to copy IP Address.');
+
+                });
+        }
+    </script>
 
 </body>
 
