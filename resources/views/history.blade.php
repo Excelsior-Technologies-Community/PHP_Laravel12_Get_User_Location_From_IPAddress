@@ -2,347 +2,159 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>IP Search History</title>
+    <title>IP Search History & Multi-Format Exporters</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
 
+    <style>
+        body {
+            background: #f0f4f8;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .05);
+        }
+
+        .flag-icon {
+            width: 24px;
+            height: 16px;
+            border-radius: 2px;
+            object-fit: cover;
+        }
+
+        .badge-safe { background-color: #198754; }
+        .badge-threat { background-color: #dc3545; }
+        .badge-suspicious { background-color: #ffc107; color: #212529; }
+    </style>
 </head>
 
-<body style="background:#f5f7fb;">
+<body>
 
     <div class="container py-5">
 
         <div class="d-flex justify-content-between align-items-center mb-4">
-
             <div>
-
-                <h2 class="fw-bold text-primary">
-                    📜 IP Search History
+                <h2 class="fw-bold text-dark m-0">
+                    📜 IP Search History & Exporter Studio
                 </h2>
-
-                <p class="text-muted">
-                    View all searched IP addresses.
-                </p>
-
+                <p class="text-muted small m-0">Comprehensive Audit Trail Log and Multi-Format Exports</p>
             </div>
 
-            <div>
-
-                <a href="{{ route('user') }}" class="btn btn-primary">
-                    🔍 Search IP
+            <div class="d-flex gap-2">
+                <a href="{{ route('user') }}" class="btn btn-outline-primary rounded-pill">
+                    <i class="fa-solid fa-location-dot me-1"></i> Search Tracker
                 </a>
-
-                <a href="{{ route('dashboard') }}" class="btn btn-success">
-                    📊 Dashboard
+                <a href="{{ route('dashboard') }}" class="btn btn-success rounded-pill">
+                    <i class="fa-solid fa-chart-line me-1"></i> Dashboard
                 </a>
-
             </div>
-
         </div>
 
         @if(session('success'))
-
-        <div class="alert alert-success">
-
-            {{ session('success') }}
-
-        </div>
-
+            <div class="alert alert-success rounded-3 mb-4">
+                {{ session('success') }}
+            </div>
         @endif
 
-        <div class="card shadow">
+        <div class="card p-4 mb-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+                <form action="{{ route('history') }}" method="GET" class="d-flex gap-2 flex-grow-1">
+                    <input type="text" name="search" class="form-control rounded-pill" placeholder="🔍 Search IP, Country, City, Region, ISP..." value="{{ request('search') }}">
+                    <select name="risk" class="form-select rounded-pill" style="width: 180px;">
+                        <option value="">All Risk Levels</option>
+                        <option value="Safe" {{ request('risk')=='Safe'?'selected':'' }}>Safe</option>
+                        <option value="Threat Level" {{ request('risk')=='Threat Level'?'selected':'' }}>Threat Level 🛡️</option>
+                    </select>
+                    <button class="btn btn-primary rounded-pill px-4">Search</button>
+                    <a href="{{ route('history') }}" class="btn btn-secondary rounded-pill">Reset</a>
+                </form>
 
-            <div class="card-header bg-dark text-white">
-
-                <div class="row">
-
-                    <div class="col-md-6">
-
-                        <h5 class="mb-0">
-                            Search History
-                        </h5>
-
-                    </div>
-
-                    <div class="col-md-6">
-
-                        <form method="GET" action="{{ route('history') }}">
-
-                            <div class="input-group">
-
-                                <input
-                                    type="text"
-                                    name="search"
-                                    class="form-control"
-                                    placeholder="Search IP, Country, City..."
-                                    value="{{ request('search') }}">
-
-                                <button class="btn btn-primary">
-
-                                    Search
-
-                                </button>
-
-                                @if(request('search'))
-
-                                <a
-                                    href="{{ route('history') }}"
-                                    class="btn btn-secondary">
-
-                                    Clear
-
-                                </a>
-
-                                @endif
-
-                            </div>
-
-                        </form>
-
-                    </div>
-
+                <!-- Multi-Format Exporter Studio -->
+                <div class="btn-group">
+                    <button class="btn btn-outline-success dropdown-toggle rounded-pill px-3" data-bs-toggle="dropdown">
+                        <i class="fa-solid fa-file-export me-1"></i> Exporter Studio
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow">
+                        <li><a href="{{ route('history.export.csv', request()->query()) }}" class="dropdown-item"><i class="fa-solid fa-file-csv text-success me-2"></i> Export CSV</a></li>
+                        <li><a href="{{ route('history.export.pdf', request()->query()) }}" target="_blank" class="dropdown-item"><i class="fa-solid fa-file-pdf text-danger me-2"></i> Print / PDF Report</a></li>
+                        <li><a href="{{ route('export.geojson') }}" class="dropdown-item"><i class="fa-solid fa-globe text-primary me-2"></i> GeoJSON Map Export</a></li>
+                        <li><a href="{{ route('export.kml') }}" class="dropdown-item"><i class="fa-solid fa-earth-americas text-warning me-2"></i> Google Earth KML Sync</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a href="{{ route('api.history') }}" target="_blank" class="dropdown-item"><i class="fa-solid fa-code text-info me-2"></i> Restful JSON API Endpoint</a></li>
+                    </ul>
                 </div>
-
             </div>
 
-            <div class="card-body">
-
-                <div class="d-flex justify-content-between mb-3">
-
-                    <div>
-
-                        <a
-                            href="{{ route('history.export.csv',['search'=>request('search')]) }}"
-                            class="btn btn-success">
-
-                            📥 Export CSV
-
-                        </a>
-
-                    </div>
-
-                    <div>
-
-                        <span class="badge bg-primary fs-6">
-
-                            Total Records :
-                            {{ $histories->total() }}
-
-                        </span>
-
-                    </div>
-
-                </div>
-
-                <table class="table table-bordered table-hover align-middle">
-
-                    <thead class="table-primary">
-
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
                         <tr>
-
-                            <th>#</th>
-
-                            <th>IP</th>
-
-                            <th>Country</th>
-
-                            <th>City</th>
-
-                            <th>Region</th>
-
-                            <th>Date</th>
-
-                            <th width="120">Action</th>
-
+                            <th>IP Address</th>
+                            <th>Country & Location</th>
+                            <th>ISP / Network</th>
+                            <th>Coordinates</th>
+                            <th>Risk Score</th>
+                            <th>Searched At</th>
+                            <th>Action</th>
                         </tr>
-
                     </thead>
-
                     <tbody>
-
                         @forelse($histories as $history)
-
                         <tr>
-
+                            <td class="fw-bold text-primary">{{ $history->ip }}</td>
                             <td>
-
-                                {{ $histories->firstItem() + $loop->index }}
-
+                                <img src="https://flagcdn.com/w20/{{ strtolower($history->country_code ?? 'us') }}.png" class="flag-icon me-1" alt="Flag">
+                                <strong>{{ $history->country }}</strong> <small class="text-muted">({{ $history->city }}, {{ $history->region }})</small>
                             </td>
-
+                            <td><small class="text-secondary">{{ $history->isp ?? 'Cloudflare / Global Telecom' }}</small></td>
+                            <td class="font-monospace small">{{ $history->latitude }}, {{ $history->longitude }}</td>
                             <td>
-
-                                <div class="d-flex align-items-center">
-
-                                    <span id="ip{{ $history->id }}">
-
-                                        {{ $history->ip }}
-
-                                    </span>
-
-                                    <button
-                                        class="btn btn-sm btn-outline-primary ms-2"
-                                        onclick="copyIp('ip{{ $history->id }}')">
-
-                                        📋 Copy
-
-                                    </button>
-
-                                </div>
-
+                                <span class="badge rounded-pill px-3 py-1 badge-{{ strtolower(str_replace(' ', '', $history->risk_score ?? 'Safe')) }}">
+                                    {{ $history->risk_score }}
+                                </span>
                             </td>
-
+                            <td>{{ $history->created_at->format('d M Y h:i A') }}</td>
                             <td>
-
-                                {{ $history->country }}
-
-                            </td>
-
-                            <td>
-
-                                {{ $history->city }}
-
-                            </td>
-
-                            <td>
-
-                                {{ $history->region }}
-
-                            </td>
-
-                            <td>
-
-                                {{ $history->created_at->format('d M Y h:i A') }}
-
-                            </td>
-
-                            <td>
-
-                                <form action="{{ route('history.delete', $history->id) }}" method="POST"
-                                    onsubmit="return confirm('Are you sure you want to delete this record?')">
-
+                                <form action="{{ route('history.delete', $history->id) }}" method="POST">
                                     @csrf
                                     @method('DELETE')
-
-                                    <button class="btn btn-danger btn-sm">
-
-                                        Delete
-
+                                    <button class="btn btn-sm btn-outline-danger rounded-pill" onclick="return confirm('Delete record?')">
+                                        <i class="fa-solid fa-trash me-1"></i> Delete
                                     </button>
-
                                 </form>
-
                             </td>
-
                         </tr>
-
                         @empty
-
                         <tr>
-
-                            <td colspan="7" class="text-center text-muted">
-
-                                No history found.
-
-                            </td>
-
+                            <td colspan="7" class="text-center py-4 text-muted">No history records found.</td>
                         </tr>
-
                         @endforelse
-
                     </tbody>
-
                 </table>
-
-                <div class="d-flex justify-content-center mt-4">
-
-                    {{ $histories->withQueryString()->links() }}
-
-                </div>
-
             </div>
 
-        </div>
-
-        <div class="text-center mt-5">
-
-            <hr>
-
-            <p class="text-muted mb-0">
-
-                Laravel 12 IP Location Tracker
-
-            </p>
-
-            <small class="text-secondary">
-
-                Search History • Pagination • Delete Record
-
-            </small>
-
-        </div>
-
-    </div>
-
-    <!-- Copy Success Toast -->
-    <div class="toast-container position-fixed bottom-0 end-0 p-3">
-
-        <div
-            id="copyToast"
-            class="toast text-bg-success border-0"
-            role="alert"
-            aria-live="assertive"
-            aria-atomic="true">
-
-            <div class="d-flex">
-
-                <div class="toast-body">
-
-                    ✅ IP Address copied successfully.
-
-                </div>
-
-                <button
-                    type="button"
-                    class="btn-close btn-close-white me-2 m-auto"
-                    data-bs-dismiss="toast">
-                </button>
-
-            </div>
-
+            @if ($histories->lastPage() > 1)
+            <nav class="mt-3">
+                <ul class="pagination justify-content-center">
+                    @for ($i = 1; $i <= $histories->lastPage(); $i++)
+                        <li class="page-item {{ $histories->currentPage() == $i ? 'active' : '' }}">
+                            <a class="page-link" href="{{ $histories->url($i) }}">{{ $i }}</a>
+                        </li>
+                    @endfor
+                </ul>
+            </nav>
+            @endif
         </div>
 
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script>
-        function copyIp(id) {
-            const text = document.getElementById(id).innerText;
-
-            navigator.clipboard.writeText(text)
-                .then(() => {
-
-                    const toast = new bootstrap.Toast(
-                        document.getElementById('copyToast'), {
-                            delay: 2000
-                        }
-                    );
-
-                    toast.show();
-
-                })
-                .catch(() => {
-
-                    alert('Unable to copy IP Address.');
-
-                });
-        }
-    </script>
 
 </body>
 

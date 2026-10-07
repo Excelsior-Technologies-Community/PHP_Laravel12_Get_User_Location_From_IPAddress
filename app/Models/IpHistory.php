@@ -14,6 +14,17 @@ class IpHistory extends Model
         'city',
         'zip',
         'latitude',
-        'longitude'
+        'longitude',
+        'isp',
+        'asn',
+        'timezone',
+        'risk_score',
+        'is_vpn_proxy',
+        'is_blacklisted',
+    ];
+
+    protected $casts = [
+        'is_vpn_proxy' => 'boolean',
+        'is_blacklisted' => 'boolean',
     ];
 }
