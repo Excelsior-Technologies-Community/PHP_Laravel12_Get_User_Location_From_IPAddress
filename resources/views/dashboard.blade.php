@@ -2,54 +2,48 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP Analytics & Global Geo Heatmap Dashboard</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+    <!-- Leaflet.js CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
     <style>
         body {
-            background: linear-gradient(135deg, #f5f7fb, #eef2f7);
-            font-family: 'Segoe UI', sans-serif;
+            background: #f0f4f8;
+            font-family: 'Segoe UI', system-ui, sans-serif;
         }
 
         .card {
             border: none;
-            border-radius: 18px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-            transition: all 0.3s ease;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .05);
         }
 
-        .card:hover {
-            transform: translateY(-4px);
+        .stat-box {
+            border-left: 4px solid #0d6efd;
+            border-radius: 12px;
+            padding: 20px;
+            background: #fff;
         }
 
-        .number {
-            font-size: 34px;
-            font-weight: bold;
-        }
-
-        .chart-box {
-            position: relative;
-            height: 340px;
+        #globalMap {
+            height: 420px;
             width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            border: 1px solid #cbd5e1;
         }
 
-        canvas {
-            max-width: 100%;
-            max-height: 100%;
-        }
-
-        .header-title {
-            font-weight: 800;
-            letter-spacing: 0.5px;
-        }
-
-        .stat-card h6 {
-            color: #6c757d;
+        .flag-icon {
+            width: 24px;
+            height: 16px;
+            border-radius: 2px;
+            object-fit: cover;
+            vertical-align: middle;
         }
     </style>
 
@@ -57,158 +51,136 @@
 
 <body>
 
-<div class="container py-5">
+    <div class="container py-5">
 
-    <!-- HEADER -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold text-primary m-0">
+                    📊 IP Analytics & Global Geo Radar Dashboard
+                </h2>
+                <p class="text-muted small m-0">Real-Time IP Intelligence, Threat Counters, and World Map Visualization</p>
+            </div>
 
-        <div>
-            <h2 class="header-title text-success">📊 IP Analytics Dashboard</h2>
-            <p class="text-muted mb-0">Real-time location tracking insights</p>
-        </div>
-
-        <div>
-            <a href="{{ route('user') }}" class="btn btn-primary me-2">🔍 Search IP</a>
-            <a href="{{ route('history') }}" class="btn btn-dark">📜 History</a>
-        </div>
-
-    </div>
-
-    <!-- STATS -->
-    <div class="row">
-
-        <div class="col-md-3 mb-4">
-            <div class="card p-3 stat-card text-center">
-                <h6>Total Searches</h6>
-                <div class="number text-primary">{{ $totalSearches }}</div>
+            <div class="d-flex gap-2">
+                <a href="{{ route('user') }}" class="btn btn-outline-primary rounded-pill">
+                    <i class="fa-solid fa-location-dot me-1"></i> Search Tracker
+                </a>
+                <a href="{{ route('history') }}" class="btn btn-dark rounded-pill">
+                    <i class="fa-solid fa-history me-1"></i> History
+                </a>
+                <a href="{{ route('subnet') }}" class="btn btn-outline-primary rounded-pill">
+                    <i class="fa-solid fa-network-wired me-1"></i> CIDR Subnet
+                </a>
             </div>
         </div>
 
-        <div class="col-md-3 mb-4">
-            <div class="card p-3 stat-card text-center">
-                <h6>Countries</h6>
-                <div class="number text-success">{{ $totalCountries }}</div>
+        <!-- Stat Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="stat-box border-primary">
+                    <div class="text-muted small fw-bold">TOTAL SEARCHES</div>
+                    <h3 class="fw-bold text-primary m-0">{{ $totalSearches }}</h3>
+                </div>
             </div>
-        </div>
 
-        <div class="col-md-3 mb-4">
-            <div class="card p-3 stat-card text-center">
-                <h6>Cities</h6>
-                <div class="number text-warning">{{ $totalCities }}</div>
+            <div class="col-md-3">
+                <div class="stat-box border-success">
+                    <div class="text-muted small fw-bold">UNIQUE COUNTRIES</div>
+                    <h3 class="fw-bold text-success m-0">{{ $totalCountries }}</h3>
+                </div>
             </div>
-        </div>
 
-        <div class="col-md-3 mb-4">
-            <div class="card p-3 stat-card text-center">
-                <h6>Today's Searches</h6>
-                <div class="number text-danger">{{ $todaySearches }}</div>
+            <div class="col-md-3">
+                <div class="stat-box border-info">
+                    <div class="text-muted small fw-bold">UNIQUE CITIES</div>
+                    <h3 class="fw-bold text-info m-0">{{ $totalCities }}</h3>
+                </div>
             </div>
-        </div>
 
-    </div>
-
-    <!-- SUMMARY -->
-    <div class="card p-4 mb-4">
-        <h5 class="mb-3">📈 Dashboard Summary</h5>
-
-        <div class="row">
-            <div class="col-md-3"><strong>Total:</strong> {{ $totalSearches }}</div>
-            <div class="col-md-3"><strong>Countries:</strong> {{ $totalCountries }}</div>
-            <div class="col-md-3"><strong>Cities:</strong> {{ $totalCities }}</div>
-            <div class="col-md-3"><strong>Today:</strong> {{ $todaySearches }}</div>
-        </div>
-    </div>
-
-    <!-- CHARTS -->
-    <div class="row">
-
-        <!-- COUNTRY CHART -->
-        <div class="col-lg-6 mb-4">
-            <div class="card p-3">
-                <h5 class="mb-3">🌍 Top 5 Countries</h5>
-                <div class="chart-box">
-                    <canvas id="countryChart"></canvas>
+            <div class="col-md-3">
+                <div class="stat-box border-danger">
+                    <div class="text-muted small fw-bold">THREAT LEVEL ALERTS 🛡️</div>
+                    <h3 class="fw-bold text-danger m-0">{{ $threatCount }}</h3>
                 </div>
             </div>
         </div>
 
-        <!-- CITY CHART -->
-        <div class="col-lg-6 mb-4">
-            <div class="card p-3">
-                <h5 class="mb-3">🏙 Top 5 Cities</h5>
-                <div class="chart-box">
-                    <canvas id="cityChart"></canvas>
+        <!-- Global Multi-Pin Leaflet OpenStreetMap Radar -->
+        <div class="card p-4 mb-4">
+            <h5 class="fw-bold text-dark mb-3"><i class="fa-solid fa-earth-americas text-primary me-2"></i>Global Geo Multi-Pin Map Radar</h5>
+            <div id="globalMap"></div>
+        </div>
+
+        <!-- Top Countries and Cities -->
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card p-4">
+                    <h5 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="fa-solid fa-flag text-warning me-2"></i>Top Searched Countries</h5>
+                    <ul class="list-group list-group-flush">
+                        @foreach($topCountries as $item)
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <img src="https://flagcdn.com/w20/{{ strtolower($item->country_code ?? 'us') }}.png" class="flag-icon me-2" alt="Flag">
+                                <strong>{{ $item->country }}</strong>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">{{ $item->total }} searches</span>
+                        </li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card p-4">
+                    <h5 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="fa-solid fa-city text-success me-2"></i>Top Searched Cities</h5>
+                    <ul class="list-group list-group-flush">
+                        @foreach($topCities as $item)
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fa-solid fa-location-dot text-danger me-2"></i>
+                                <strong>{{ $item->city }}</strong> <small class="text-muted">({{ $item->country }})</small>
+                            </div>
+                            <span class="badge bg-success rounded-pill">{{ $item->total }} searches</span>
+                        </li>
+                        @endforeach
+                    </ul>
                 </div>
             </div>
         </div>
 
     </div>
 
-    <div class="text-center mt-4 text-muted">
-        <hr>
-        Laravel 12 IP Tracker • Analytics Dashboard
-    </div>
+    <!-- Leaflet.js Script -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-</div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Global World Map
+            const globalMap = L.map('globalMap').setView([20, 0], 2);
 
-<script>
-    const countryLabels = @json($topCountries->pluck('country'));
-    const countryData = @json($topCountries->pluck('total'));
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 18,
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(globalMap);
 
-    new Chart(document.getElementById('countryChart'), {
-        type: 'bar',
-        data: {
-            labels: countryLabels,
-            datasets: [{
-                label: 'Searches',
-                data: countryData,
-                backgroundColor: '#198754',
-                borderRadius: 8
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false }
-            },
-            scales: {
-                y: { beginAtZero: true, grid: { color: "#eee" } },
-                x: { grid: { display: false } }
-            }
-        }
-    });
+            const mapPins = @js($mapPins);
 
-    const cityLabels = @json($topCities->pluck('city'));
-    const cityData = @json($topCities->pluck('total'));
+            mapPins.forEach(pin => {
+                const popup = `
+                    <div style="font-family: system-ui; text-align: center;">
+                        <img src="${pin.flag}" style="width: 20px; height: 14px; margin-bottom: 2px;" />
+                        <h6 style="margin: 2px 0; font-weight: bold; color: #0d6efd;">${pin.ip}</h6>
+                        <small style="color: #555;">${pin.city}, ${pin.country}</small><br>
+                        <span style="font-size: 10px; font-weight: bold; color: ${pin.risk === 'Threat Level' ? '#dc3545' : '#198754'};">Risk: ${pin.risk}</span>
+                    </div>
+                `;
 
-    new Chart(document.getElementById('cityChart'), {
-        type: 'doughnut',
-        data: {
-            labels: cityLabels,
-            datasets: [{
-                data: cityData,
-                backgroundColor: [
-                    '#0d6efd',
-                    '#198754',
-                    '#ffc107',
-                    '#dc3545',
-                    '#6f42c1'
-                ]
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '65%',
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            }
-        }
-    });
-</script>
+                L.marker([pin.lat, pin.lng]).addTo(globalMap)
+                    .bindPopup(popup);
+            });
+        });
+    </script>
 
 </body>
+
 </html>
